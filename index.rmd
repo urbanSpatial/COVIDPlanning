@@ -5,7 +5,9 @@ output:
     orientation: rows
     vertical_layout: scroll
     theme: default
+    mathjax: null
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
@@ -223,31 +225,106 @@ formattable::format_table(sparkline.finish,
 County Reports {data-icon="fa-map"}
 =======================================================================
 
-Row {data-height=800}
--------------------------------------
-   
-### 
-<br>
-<br>
-<h2 style="text-align:left; font-weight: bold;">Choose a regional or county-level report</h2>
+<h3>County Level Analysis</h3>
+
+
 ```{r}
 county_plots <- c("./REPORTS/Regional.html", "./REPORTS/Atlantic_County.html",
-                  "./REPORTS/Bucks_County.html", 
+                  "./REPORTS/Bucks_County.html",
                   "./REPORTS/Burlington_County.html", "./REPORTS/Camden_County.html",
-                  "./REPORTS/Cape May_County.html",  "./REPORTS/Cumberland_County.html",
                   "./REPORTS/Delaware_County.html", "./REPORTS/Montgomery_County.html", "./REPORTS/Philadelphia_County.html")
-names(county_plots) <- str_replace_all(county_plots, 
-                                      c("\\.html" = "", 
+names(county_plots) <- str_replace_all(county_plots,
+                                      c("\\.html" = "",
                                         "./REPORTS/" = "",
                                         "_" = " "))
-  bsselect(c(county_plots), 
-           frame_height = "100%",
-           type = "iframe", 
-           selected = "Regional", 
-           elementId = "dropdown",
-           live_search = FALSE, 
-           show_tick = TRUE)
-```   
+
+# note this only support iframe
+bsselect_buildTags <- function(
+  choices,
+  selected = NULL,
+  dropdownAlignRight = FALSE,
+  dropupAuto = TRUE,
+  header = FALSE,
+  liveSearch = FALSE,
+  boxWidth = FALSE,
+  liveSearchStyle = c("contains", "startsWith"),
+  showTick = FALSE,
+  size = "auto",
+  style = NULL,
+  selectWidth = "20%",
+  frameHeight = NULL,
+  frameWidth = "80%",
+  elementId = NULL
+) {
+  l <- function(x) return(tolower(as.character(x)))
+  if (is.null(selected)) {
+      sel <- choices[1]
+  }
+  else {
+      index <- match(selected, names(choices))
+      sel <- choices[index]
+  }
+  liveSearchStyle = match.arg(liveSearchStyle, c("contains", "startsWith"))
+  tagList(
+    # get necessary dependencies minus htmlwidgets.js and bsselect widget binding
+    htmlwidgets::getDependency("bsselect", package="bsselectR")[2],
+    tags$div(
+      style = "width: 100%;",
+      tags$div(
+        style = paste0("width:", selectWidth,"; float: left; padding-left:20px;"),
+        tags$select(
+          id = paste0(elementId,"-select"),
+          class = "selectpicker",
+          `data-dropdown-align-right` = l(dropdownAlignRight),
+          `data-dropup-auto` = l(dropupAuto), `data-header` = l(header),
+          `data-live-search` = l(liveSearch), `data-live-search-style` = liveSearchStyle,
+          `data-show-tick` = l(showTick), `data-width` = l(boxWidth),
+          `data-size` = l(size), `data-style` = style,
+          bsselectR:::selectOptions(choices, selected)
+        )
+      ),
+      tags$iframe(
+        id = paste0(elementId,"-iframe"),
+        src  = sel,
+        frameborder = "0",
+        style = paste0("height:", frameHeight, "; width:", frameWidth,"; float: left;")
+      )
+    ),
+    tags$script(htmltools::HTML(sprintf(
+"
+$(document).ready(function() {
+$('#%s').change(function() {
+$('#%s').attr('src', $(this).val())
+})
+})
+",
+paste0(elementId,"-select"),
+paste0(elementId,"-iframe")
+    )))
+  )
+}
+
+# potentially better to create directly or deconstruct
+# bsselect(county_plots,
+#          frame_height = NULL,
+#          type = "iframe",
+#          selected = "Regional",
+#          elementId = "dropdown",
+#          live_search = TRUE,
+#          show_tick = TRUE)
+
+# use our new function instead; note camelCase not snakecase
+bsselect_buildTags(county_plots,
+         selectWidth = "20%",
+         frameHeight = "calc(100vh - 150px)",
+         frameWidth = "75%",
+         #type = "iframe", #only support iframe
+         selected = "Regional",
+         elementId = "dropdown",
+         liveSearch = TRUE,
+         showTick = TRUE)
+```  
+
 
 
 About 
