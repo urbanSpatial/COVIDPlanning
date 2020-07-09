@@ -20,9 +20,7 @@ library(stringr)
 library(leaflet)
 library(kableExtra)
 library(sf)
-library(sparkline)
 library(tidyverse)
-library(formattable)
 library(htmltools)
 library(scales)
 library(dataui)
@@ -93,6 +91,21 @@ leaflet-container {
 .html-widget {
     margin: auto;
 }
+/* constrain leaflet and reactable to screen boundaries */
+.reactable, .leaflet-container {
+  max-width: 96vw;
+}
+/* make reactable cells even compacter */
+.rt-compact .rt-td {
+  padding: 0  6px !important;
+}
+.dataui.html-widget {
+  margin: 0px;
+}
+/* hide auto generated flexdashboard row in overview, county report */
+#project-overview .section.level1, #county-reports .section.level1 {
+  display: none;
+}
 
 p {
   margin-right: 150px;
@@ -103,8 +116,34 @@ iframe {
   padding-top: 75px;
 }
 
+/* footer styling */
+.footer {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+
 </style>
 
+
+<script>
+function renderTooltip(_ref) {
+  var datum = _ref.datum;
+  return React.createElement(
+      'div',
+      null,
+      datum.x && React.createElement(
+        'div',
+        null,
+        datum.x
+      ),
+      React.createElement(
+        'div',
+        null,
+        datum.y ? datum.y.toLocaleString(undefined, {maximumFractionDigits:0}) : '--'
+      )
+  );
+}
+</script>
 
 ```{r data, include=FALSE}
 ### NEED ALL THE DATA
@@ -404,9 +443,9 @@ rt1 <- df %>%
         style = "border-right: 2px solid #e6e6e6; height: 50px;",
         minWidth = 150,
         maxWidth = 150,
-        cell = function(value,index) {
-          dui_sparkline(
-            data = value,
+        cell = dui_for_reactable(
+          {dui_sparkline(
+            data = htmlwidgets::JS("cellInfo.value"),
             height = 40,
             width = 135,
             margin = list(top = 8, right = 6, bottom = 0, left = 10),
@@ -424,11 +463,11 @@ rt1 <- df %>%
                     React.createElement(
                       'div',
                       null,
-                      datum.y ? datum.y.toLocaleString(undefined, {maximumFractionDigits:0}) : \"--\"
+                      datum.y ? datum.y.toLocaleString(undefined, {maximumFractionDigits:0}) : '--'
                     )
                 );
               }
-                          "),
+            "),
             components = list(
               dui_sparklineseries(
                 showArea = TRUE,
@@ -454,8 +493,8 @@ rt1 <- df %>%
                 )
               )
             )
-          )
-        }
+          )}
+        )
       )},
 num_grants = {colDef(
   name = "Number of Grants",
@@ -540,16 +579,17 @@ vulnerability_hist = {colDef(
 )
 
 
-rt1
+rt1 %>% dui_add_reactable_dep()
 
 ```
 
 
-<br>
+<div class = "footer">
 <p style="font-size:18px;"> This work was supported by a coalition philanthropic organizations in the Delaware Valley Region and created by the below entities. </p>
-<br>
-<center><img src="./IMAGES/3logos_ERproject.png" width="600"></center>
-
+<center>
+  <img style="margin-top: 1.5em;max-width:100vw;" src="./IMAGES/3logos_ERproject.png" width="600">
+</center>
+</div>
 
 
 
@@ -557,7 +597,6 @@ County Reports {data-icon="fa-map"}
 =======================================================================
 
 <h3>County Level Analysis</h3>
-
 
 ```{r}
 county_plots <- c("./REPORTS/Regional.html", "./REPORTS/Atlantic_County.html",
@@ -656,8 +695,6 @@ bsselect_buildTags(county_plots,
          showTick = TRUE)
 ```  
 
-
-
 About 
 =======================================================================
 
@@ -702,9 +739,9 @@ kable(sources) %>%
 
 ```
 
-<br>
+<div class = "footer">
 <p style="font-size:18px;"> This work was supported by a coalition philanthropic organizations in the Delaware Valley Region and created by the below entities. </p>
-<br>
-<center><img src="./IMAGES/3logos_ERproject.png" width="600"></center>
-
-
+<center>
+  <img style="margin-top: 1.5em;max-width:100vw;" src="./IMAGES/3logos_ERproject.png" width="600">
+</center>
+</div>
