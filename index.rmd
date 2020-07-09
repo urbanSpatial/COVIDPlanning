@@ -25,6 +25,10 @@ library(tidyverse)
 library(formattable)
 library(htmltools)
 library(scales)
+library(dataui)
+library(reactable)
+library(tibble)
+library(lubridate)
 ```
 
 <style>
@@ -105,15 +109,33 @@ iframe {
 ```{r data, include=FALSE}
 ### NEED ALL THE DATA
 repo_dir <- "C:/MicaDL/CV19_Grants/cv19grantmaking"
-all_long_sf_clean <- readr::read_rds(file.path(repo_dir,"/DATA/all_long_sf_clean.rds"))
-sparkline.finish  <- readr::read_rds(file.path(repo_dir,"/DATA/needs_summary_JS_table.rds"))
-grantmakingData   <- read.csv(file.path(repo_dir,"DATA/6_1_2020_ERFund_geocodes_MDH.csv"),
+# all_long_sf_clean <- readr::read_rds(file.path(repo_dir,"/DATA/all_long_sf_clean.rds"))
+all_long_sf_clean <- readr::read_rds(file.path(repo_dir,"/DATA/all_long_sf_clean_vars_region.rds")) 
+indices_clean3 <- readr::read_rds(file.path(repo_dir,"/DATA/indices_clean3.rds"))
+# sparkline.finish  <- readr::read_rds(file.path(repo_dir,"/DATA/needs_summary_JS_table.rds"))
+grantmakingData   <- read.csv(file.path(repo_dir,"DATA/7_7_2020_ERFund_geocodes_MDH.csv"),
                      stringsAsFactors = FALSE) 
-
+# Download CV19 data
+region.covid <- 
+  read.csv("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv") %>% 
+  filter(state %in% c("Pennsylvania", "New Jersey"))
 Region_county_outline_sf    <- st_read(file.path(repo_dir,
                                                  "/GEOJSON/Region_county_outline_sf.geojson"))
 county_vulnerability_grants <- st_read(file.path(repo_dir,
                                                  "/GEOJSON/county_vulnerability_grants.geojson"))
+
+### Working on a new version for leaflet map, need to join in alignment data
+county_vulnerability_grants2 <- indices_clean3 %>% 
+  st_drop_geometry() %>% 
+  filter(Index == "vulnerability_index") %>% 
+  pivot_wider(names_from = Index, values_from = Value) %>% 
+  left_join(., filter(indices_clean3, Index == "vulnerability_index") %>% 
+               select(GEOID) , by = "GEOID") %>% 
+  st_as_sf()
+
+county_vulnerability_grants
+counties <- c("Philadelphia", "Montgomery", "Chester", "Delaware", "Bucks", "Camden", "Burlington", "Atlantic", "Cumberland", "Cape May")
+
 ```
 
 
@@ -193,24 +215,333 @@ leaflet(height = 550, width = 800) %>%
 ```{r}
 h3("County grantmaking and need statistics")
 
-formattable::format_table(sparkline.finish, 
-  align =c("l","c","c","c","c","c","c","c"),
-  list(
-    Number=color_bar("#F1A587"),
-    Dollars=color_bar("#F3C0AC"),
-    Housing_Instability=color_bar("#8BBCD9"),
-    Social_Vulnerability=color_bar("#AFD0E3"))) %>%
+### Commented out old table
+# formattable::format_table(sparkline.finish, 
+#   align =c("l","c","c","c","c","c","c","c"),
+#   list(
+#     Number=color_bar("#F1A587"),
+#     Dollars=color_bar("#F3C0AC"),
+#     Housing_Instability=color_bar("#8BBCD9"),
+#     Social_Vulnerability=color_bar("#AFD0E3"))) %>%
+#   
+#   kable_styling("striped", full_width = F, bootstrap_options = c("striped", "hover", "condensed")) %>%
+#     add_header_above(c(" " = 1, "Total Granting" = 2, "Average Need" = 2, "Distribution of Need & Resources" = 3),
+#      color="grey") %>%
+#     column_spec(1, bold = T, border_right = T) %>%
+#     column_spec(3, border_right = T) %>%
+#     column_spec(5, border_right = T) %>%
+#     column_spec(8, border_right = T) %>%
+#   htmltools::HTML() %>%
+#   shiny::div() %>%
+#   sparkline::spk_add_deps()
+
+#### ALL THE DATA MUNGING FOR THE NEW TABLE
+### summarise population by county
+county_pop <- all_long_sf_clean %>% 
+  filter(Variable == "pop") %>% 
+  st_drop_geometry() %>% 
+  group_by(County) %>% 
+  summarise(population = sum(Value, na.rm = TRUE)) %>% 
+  mutate(County = str_remove(County, " County"))
+
+### Create cumulative and per capita CV19 metrics
+region.covid2 <- region.covid %>% 
+  mutate(state_county = paste0(state,",",county)) %>% 
+  filter(county %in% counties) %>% 
+  filter(state_county != "Pennsylvania,Cumberland") %>% 
+  arrange(county, date) %>%
+  group_by(county) %>% 
+  mutate(previous.cases  = lag(cases, order_by=date, default = 0),
+         New.Cases       = cases - previous.cases,
+         New.Cases       = ifelse(New.Cases < 0, 0, New.Cases),
+         cases_cume      = cumsum(New.Cases),
+         previous.deaths = lag(deaths, order_by=date, default = 0),
+         New.Deaths       = deaths - previous.deaths,
+         New.Deaths       = ifelse(New.Deaths < 0, 0, New.Deaths),
+         deaths_cume      = cumsum(New.Deaths),
+         Day_of_the_year = yday(date)) %>% 
+  arrange(county) %>%
+  rename(County = county) %>%
+  ungroup() %>% 
+  mutate(County = as.character(County))
   
-  kable_styling("striped", full_width = F, bootstrap_options = c("striped", "hover", "condensed")) %>%
-    add_header_above(c(" " = 1, "Total Granting" = 2, "Average Need" = 2, "Distribution of Need & Resources" = 3),
-     color="grey") %>%
-    column_spec(1, bold = T, border_right = T) %>%
-    column_spec(3, border_right = T) %>%
-    column_spec(5, border_right = T) %>%
-    column_spec(8, border_right = T) %>%
-  htmltools::HTML() %>%
-  shiny::div() %>%
-  sparkline::spk_add_deps()
+### Summarise CV19 metrics by county
+region.covid_sum <- region.covid2 %>% 
+  group_by(County) %>% 
+  summarise(total_cases = max(cases_cume),
+            total_deaths = max(deaths_cume)) %>% 
+  left_join(county_pop, by = "County") %>% 
+  mutate(cases_pc  = total_cases / population,
+         deaths_pc = total_deaths / population,
+         cases_p1000c  = total_cases / (population/1000),
+         deaths_p1000c = total_deaths / (population/1000)) %>% 
+  arrange(County)
+  
+### Munge indices
+Index_dat <- indices_clean3 %>% 
+  st_drop_geometry() %>% 
+  filter(Index %in% c("housing_index", "vulnerability_index")) %>% 
+  pivot_wider(names_from = Index, values_from = Value) %>% 
+  mutate(County = str_remove(County, " County")) %>% 
+  arrange(County)
+
+Index_sum <- Index_dat %>% 
+  group_by(County) %>% 
+  summarise(mean_housing_index = mean(housing_index, na.rm=TRUE),
+            mean_vuln_index    = mean(vulnerability_index, na.rm=TRUE)) %>% 
+  ungroup() %>% 
+  arrange(County)
+
+### Munge grants data
+County_Grant_Sum <- grantmakingData %>% 
+  group_by(County) %>% 
+  summarise(total_grants = n(),
+            total_grant_dollars = sum(amountAwarded)) %>% 
+  rbind(., data.frame(County = c("Cape May", "Cumberland"),
+                      total_grants = c(0,0),
+                      total_grant_dollars = c(0,0))) %>% 
+  mutate(County = str_remove(County, " County")) %>% 
+  left_join(county_pop, by = "County") %>% 
+  mutate(grant_dollars_pc = total_grant_dollars / population,
+         grant_dollars_p1000c = total_grant_dollars / (population/1000)) %>% 
+  arrange(County)
+
+grantmakingData_full <- grantmakingData %>% 
+  select(County, amountAwarded) %>% 
+  mutate(County = str_remove(County, " County")) %>% 
+  rbind(., data.frame(County = c("Cape May", "Cumberland"),
+                      amountAwarded = c(0,0))) %>% 
+  arrange(County)
+
+#plot
+# region.covid2 %>%
+#   ggplot(aes(as.Date(date), cases_cume)) +
+#   geom_bar(stat="identity" , fill="black") +
+#   theme(legend.position = "none") +
+#   facet_wrap(~county)
+
+ncounty <- length(counties)
+
+create_data_hist <- function(dat = NULL, alldat=NULL, ...) {
+  h_all <- hist(alldat, plot = FALSE, ...)
+  h_dat <- hist(dat, breaks = h_all$breaks, plot=FALSE)
+  list(
+    h_all = unclass(h_all),
+    h_dat = unclass(h_dat)
+  )
+}
+
+split_tibble <- function(tibble, column = "County") {
+  tibble %>% 
+    split(., .[,column]) %>% 
+    lapply(., function(x) na.omit(x[,setdiff(names(x),column), drop = TRUE]))
+}
+
+df <- tibble(
+  county = sort(counties),
+  cases_per_capita = round(region.covid_sum$cases_p1000c,2),
+  deaths_per_capita = round(region.covid_sum$deaths_p1000c,2),
+  cases_over_time = split_tibble(region.covid2 %>% select(County, cases_cume)),
+  num_grants = County_Grant_Sum$total_grants,
+  dollar_grants = County_Grant_Sum$total_grant_dollars,
+  dollar_grants_per_capita = County_Grant_Sum$grant_dollars_pc,
+  avg_housing_instability  = round(Index_sum$mean_housing_index),
+  avg_social_vulnerability = round(Index_sum$mean_vuln_index),
+) %>%
+  mutate(
+    n = row_number(),
+    grant_data = split_tibble(grantmakingData_full),
+    grant_hist = lapply(
+      grant_data,
+      function(dat) create_data_hist(dat = dat,alldat = unlist(grant_data))
+    ),
+    instability_data = split_tibble(Index_dat %>% select(County, housing_index)),
+    instability_hist = lapply(
+      instability_data,
+      function(dat) create_data_hist(dat = dat,alldat = unlist(instability_data))
+    ),
+    vulnerability_data = split_tibble(Index_dat %>% select(County, vulnerability_index)),
+    vulnerability_hist = lapply(
+      vulnerability_data,
+      function(dat) create_data_hist(dat = dat,alldat = unlist(vulnerability_data))
+    )
+  )
+
+rt1 <- df %>%
+  select(-n, -contains("_data")) %>%
+  reactable(
+    pagination = FALSE,
+    rowStyle = "align-items: center; font-size:120%; line-height:50px;",
+    borderless = TRUE,
+    striped = TRUE,
+    compact = TRUE,
+    defaultColDef = colDef(
+      headerStyle = list( display = "flex", flexDirection= "column", justifyContent= "flex-end", textAlign = "center"),
+      sortable = FALSE
+    ),
+    columnGroups = list(
+      colGroup( name = "COVID-19", columns = c("cases_per_capita","deaths_per_capita","cases_over_time") ),
+      colGroup( name = "Average Need", columns = c("avg_housing_instability", "avg_social_vulnerability")),
+      colGroup( name = "Distribution of Needs and Resources", columns = tail(colnames(.),3))
+    ),
+    columns = list(
+      county = colDef(
+        name = "County", sortable = TRUE, minWidth = 120, maxWidth = 140,
+        style = "border-right: 2px solid #e6e6e6;"
+      ),
+      cases_per_capita = colDef(
+        name = "Cases Per 1000 Pop",
+        sortable = TRUE,
+        maxWidth = 80,
+      ),
+      deaths_per_capita = colDef(
+        name = "Deaths Per 1000 Pop",
+        sortable = TRUE,
+        maxWidth = 75,
+      ),
+      cases_over_time = {colDef(
+        name = "Cases Over Time",
+        style = "border-right: 2px solid #e6e6e6; height: 50px;",
+        minWidth = 150,
+        maxWidth = 150,
+        cell = function(value,index) {
+          dui_sparkline(
+            data = value,
+            height = 40,
+            width = 135,
+            margin = list(top = 8, right = 6, bottom = 0, left = 10),
+            renderTooltip = htmlwidgets::JS("
+              function(_ref) {
+                var datum = _ref.datum;
+                return React.createElement(
+                    'div',
+                    null,
+                    datum.x && React.createElement(
+                      'div',
+                      null,
+                      datum.x
+                    ),
+                    React.createElement(
+                      'div',
+                      null,
+                      datum.y ? datum.y.toLocaleString(undefined, {maximumFractionDigits:0}) : \"--\"
+                    )
+                );
+              }
+                          "),
+            components = list(
+              dui_sparklineseries(
+                showArea = TRUE,
+                stroke = "#91a7ff",
+                fill = "#91a7ff"
+              ),
+              dui_sparkpointseries(
+                points = list("last"),
+                stroke = "rgb(92, 124, 250)",
+                fill = "#fff",
+                size = 3,
+                labelPosition = "left",
+                labelOffset = "10",
+                renderLabel = htmlwidgets::JS("function(d) {return d.toLocaleString(undefined, {maximumFractionDigits:0})}")
+              ),
+              dui_tooltip(
+                components = list(
+                  dui_sparkverticalrefline(key="ref-vertical",strokeWidth=1, strokeDasharray="4 4"),
+                  dui_sparkpointseries(
+                    key="ref-point",
+                    fill="#91a7ff"
+                  )#,
+                )
+              )
+            )
+          )
+        }
+      )},
+num_grants = {colDef(
+  name = "Number of Grants",
+  sortable = TRUE,
+  format = colFormat(separators = TRUE, digits = 0),
+  maxWidth = 90,
+)},
+dollar_grants = {colDef(
+  name = "Total Grant Dollars",
+  sortable = TRUE,
+  format = colFormat(prefix = "$", separators = TRUE, digits = 0),
+  maxWidth = 100,
+)},
+dollar_grants_per_capita = {colDef(
+  name = "Grant Dollars Per Capita",
+  sortable = TRUE,
+  format = colFormat(prefix = "$", separators = TRUE, digits = 2),
+  maxWidth = 90
+)},
+avg_housing_instability = {colDef(
+  name = "Average Housing Instability",
+  sortable = TRUE,
+  maxWidth = 90,
+  align = "center"
+)},
+avg_social_vulnerability = {colDef(
+  name = "Average Social Vulnerability",
+  sortable = TRUE,
+  maxWidth = 100,
+  style = "border-right: 2px solid #e6e6e6;",
+  align = "center"
+)},
+grant_hist = {colDef(
+  name = "Histogram of Grants by Grant Dollars (R)",
+  align = "center",
+  minWidth = 100,
+  maxWidth = 100,
+  cell = function(value, index) {
+    dui_histogram(
+      height = 40,
+      width = 100,
+      margin = list(top = 0, right = 6, bottom = 0, left = 6),
+      components = list(
+        dui_barseries(binnedData = hist_to_binned_data(value$h_dat), animated = FALSE)
+      )
+    )
+  }
+)},
+instability_hist = {colDef(
+  name = "Histogram of Housing Instability (R)",
+  align = "center",
+  minWidth = 100,
+  maxWidth = 100,
+  cell = function(value, index) {
+    dui_histogram(
+      height = 40,
+      width = 100,
+      margin = list(top = 0, right = 6, bottom = 0, left = 6),
+      components = list(
+        dui_barseries(binnedData = hist_to_binned_data(value$h_dat), animated = FALSE, fill = "#20c997")
+      )
+    )
+  }
+)},
+vulnerability_hist = {colDef(
+  name = "Histogram of Social Vulnerability (R)",
+  align = "center",
+  minWidth = 100,
+  maxWidth = 100,
+  cell = function(value, index) {
+    dui_histogram(
+      height = 40,
+      width = 100,
+      margin = list(top = 0, right = 6, bottom = 0, left = 6),
+      components = list(
+        dui_barseries(binnedData = hist_to_binned_data(value$h_dat), animated = FALSE, fill="#be4bdb")
+      )
+    )
+  }
+)}
+    )
+)
+
+
+rt1
+
 ```
 
 
