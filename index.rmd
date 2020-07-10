@@ -173,7 +173,7 @@ Project Overview
 =======================================================================
 
 <div style="max-width:1200px; width: 100%; padding: 0 20px;">
-<h1 style="font-size:32px;"><strong><center>CV-19 Grantmaking strategic planning analytics (Phase 1)</center></strong></h1>
+<h1 style="font-size:36px;"><strong><center>CV-19 Grantmaking strategic planning analytics (Phase 1)</center></strong></h1>
 <h2 style="font-size:24px;"><strong><i>An atlas of COVID-19 era need and philanthropic response in the Delaware Valley Region</i></strong></h2>
 <br>
 <h4><strong>July 2020</strong></h4>
