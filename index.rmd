@@ -353,6 +353,7 @@ rt1 <- df %>%
     columnGroups = list(
       colGroup( name = "COVID-19", columns = c("cases_per_capita","deaths_per_capita","cases_over_time") ),
       colGroup( name = "Average Need", columns = c("avg_housing_instability", "avg_social_vulnerability")),
+      colGroup( name = "Granting Indicators", columns = c("num_grants", "dollar_grants", "dollar_grants_per_capita")),
       colGroup( name = "Distribution of Needs and Resources", columns = tail(colnames(.),3))
     ),
     columns = list(
