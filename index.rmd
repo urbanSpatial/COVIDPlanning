@@ -35,6 +35,10 @@ library(lubridate)
 body {background-color: #ffffff;}
 .tab-content>.dashboard-page-wrapper.active {background-color: #ffffff}
 
+.dashboard-page-wrapper {
+  align-items: center;
+}
+
 <!-- Text centering -->
 h1, .h1, strong, .strong {text-align: center;}
 h2 {text-align: center;}
@@ -82,18 +86,13 @@ li.selected.active > a {background-color: #2780e3;}
 
 
 <!-- leaflet center -->
-.leaflet-container {
-    margin: auto;
-}
-leaflet-container {
-    margin: auto;
-}
 .html-widget {
     margin: auto;
 }
 /* constrain leaflet and reactable to screen boundaries */
 .reactable, .leaflet-container {
   max-width: 96vw;
+  margin: auto;
 }
 /* make reactable cells even compacter */
 .rt-compact .rt-td {
@@ -107,17 +106,13 @@ leaflet-container {
   display: none;
 }
 
-p {
-  margin-right: 150px;
-  margin-left: 150px;
-}
-
 iframe {
   padding-top: 75px;
+  min-width: 320px; /* should be smallest width modern phone */
 }
 
 /* footer styling */
-.footer {
+footer {
   margin-top: 1.5em;
   margin-bottom: 1.5em;
 }
@@ -193,7 +188,7 @@ counties <- c("Philadelphia", "Montgomery", "Chester", "Delaware", "Bucks", "Cam
 Project Overview
 =======================================================================
 
-
+<div style="max-width:1200px; width: 100%; padding: 0 20px;">
 <h1 style="font-size:32px;"><strong><center>CV-19 Grantmaking strategic planning analytics (Phase 1)</center></strong></h1>
 <h2 style="font-size:24px;"><i>An atlas of COVID-19 era need and philanthropic response in the Delaware Valley Region</i></h2>
 <br>
@@ -583,20 +578,21 @@ rt1 %>% dui_add_reactable_dep()
 
 ```
 
-
-<div class = "footer">
+<footer>
 <p style="font-size:18px;"> This work was supported by a coalition philanthropic organizations in the Delaware Valley Region and created by the below entities. </p>
 <center>
-  <img style="margin-top: 1.5em;max-width:100vw;" src="./IMAGES/3logos_ERproject.png" width="600">
+  <img style="margin-top: 1.5em;max-width:96vw;" src="./IMAGES/3logos_ERproject.png" width="600">
 </center>
+</footer>
+
 </div>
-
-
 
 County Reports {data-icon="fa-map"}
 =======================================================================
 
 <h3>County Level Analysis</h3>
+
+<div style="max-width:1200px; width: 100%; padding: 0 20px;">
 
 ```{r}
 county_plots <- c("./REPORTS/Regional.html", "./REPORTS/Atlantic_County.html",
@@ -693,11 +689,14 @@ bsselect_buildTags(county_plots,
          elementId = "dropdown",
          liveSearch = TRUE,
          showTick = TRUE)
-```  
+```
+
+</div>
 
 About 
 =======================================================================
 
+<div style="max-width:1200px; width: 100%; padding: 0 20px;">
 <h3>About this project</h3>
 <br>
 <p style="font-size:18px;">The purpose of this Phase 1 COVID-19 regional data dashboard is to support a more informed and coordinated, regional response among philanthropic funders by providing information on: What the needs are for philanthropic funding, where that need is, who is receiving aid, how & when major relief funds are responding.</p>
@@ -739,9 +738,12 @@ kable(sources) %>%
 
 ```
 
-<div class = "footer">
+<footer>
 <p style="font-size:18px;"> This work was supported by a coalition philanthropic organizations in the Delaware Valley Region and created by the below entities. </p>
 <center>
-  <img style="margin-top: 1.5em;max-width:100vw;" src="./IMAGES/3logos_ERproject.png" width="600">
+  <img style="margin-top: 1.5em;max-width:96vw;" src="./IMAGES/3logos_ERproject.png" width="600">
 </center>
+</footer>
+
+
 </div>
