@@ -286,9 +286,15 @@ grantmakingData_full <- grantmakingData %>%
 
 ncounty <- length(counties)
 
-create_data_hist <- function(dat = NULL, alldat=NULL, ...) {
-  h_all <- hist(alldat, plot = FALSE, ...)
-  h_dat <- hist(dat, breaks = h_all$breaks, plot=FALSE)
+create_data_hist <- function(dat = NULL, alldat=NULL, trim_outliers = FALSE, ...) {
+  if(trim_outliers == TRUE) {
+    h_all <- hist(alldat[alldat < quantile(alldat, probs=0.98, names = FALSE)], plot=FALSE, ...)
+    dat <- dat[dat < quantile(alldat, probs=0.98, names = FALSE)]
+  } else {
+    h_all <- hist(alldat, plot = FALSE, ...)
+  }
+
+  h_dat <- hist(dat, breaks = h_all$breaks, plot=FALSE, ...)
   list(
     h_all = unclass(h_all),
     h_dat = unclass(h_dat)
@@ -317,7 +323,7 @@ df <- tibble(
     grant_data = split_tibble(grantmakingData_full),
     grant_hist = lapply(
       grant_data,
-      function(dat) create_data_hist(dat = dat,alldat = unlist(grant_data))
+      function(dat) create_data_hist(dat = dat,alldat = unlist(grant_data), trim_outliers=TRUE)
     ),
     instability_data = split_tibble(Index_dat %>% select(County, housing_index)),
     instability_hist = lapply(
