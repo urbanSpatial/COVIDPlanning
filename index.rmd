@@ -45,12 +45,6 @@ h2 {text-align: center;}
 h3 {text-align: center;}
 h4 {text-align: center;}
 
-<!-- Dropdown menu -->
-<!-- .btn-default:active, .btn-default.active,  -->
-<!-- .open>.dropdown-toggle.btn-default, -->
-<!-- .btn-default:focus { -->
-<!--   background-color: #2780e3; -->
-<!-- } -->
 .btn-default:active:hover, .btn-default.active:hover, .open>.dropdown-toggle.btn-default:hover, .btn-default:active:focus, .btn-default.active:focus, .open>.dropdown-toggle.btn-default:focus, .btn-default:active.focus, .btn-default.active.focus, .open>.dropdown-toggle.btn-default.focus
  {
   background-color: #2780e3;
@@ -173,101 +167,28 @@ counties <- c("Philadelphia", "Montgomery", "Chester", "Delaware", "Bucks", "Cam
 ```
 
 
-<!-- Summary Table Creation -->
-<!-- # ```{r include=FALSE} -->
-<!-- # State  = "Pennsylvania" -->
-<!-- # pa.counties <- c("Bucks County", "Montgomery County", "Chester County", "Delaware County","Philadelphia County") -->
-<!-- # nj.counties <- c("Camden County","Burlington County","Atlantic County","Cumberland County","Cape May County") -->
-<!-- # pa_dat <- filter(all_long_sf_clean, State=="Pennsylvania" & County %in% pa.counties) -->
-<!-- # nj_dat <- filter(all_long_sf_clean, State=="New Jersey" & County %in% nj.counties) -->
-<!-- # all_dat.sf <- rbind(pa_dat, nj_dat) %>% st_transform(4326)                -->
-<!-- # all_dat <- rbind(st_drop_geometry(pa_dat), st_drop_geometry(nj_dat))                  -->
-<!-- # ``` -->
-
-
 Project Overview
 =======================================================================
 
 <div style="max-width:1200px; width: 100%; padding: 0 20px;">
 <h1 style="font-size:32px;"><strong><center>CV-19 Grantmaking strategic planning analytics (Phase 1)</center></strong></h1>
-<h2 style="font-size:24px;"><i>An atlas of COVID-19 era need and philanthropic response in the Delaware Valley Region</i></h2>
+<h2 style="font-size:24px;"><strong><i>An atlas of COVID-19 era need and philanthropic response in the Delaware Valley Region</i></strong></h2>
 <br>
-<h4>June, 2020</h4>
+<h4><strong>July 2020</strong></h4>
 <br>
-<p style="font-size:18px;">Where have Delaware Valley philanthropies allocated emergency COVID-19 resources, and how do those resources align with need? In this, the first Phase of a larger project, a series of strategic planning analytics have been designed to help stakeholders target future grantmaking where it is most in need.</p>
-<br>
+<p style="font-size:18px;">Where have Delaware Valley philanthropies allocated emergency COVID-19 resources, and how do those resources align with need? For this project, a series of strategic planning analytics have been designed to help stakeholders target future grantmaking where it is most in need.</p>
+
 <p style="font-size:18px;">Visit County Reports above to investigate the geography of grantmaking and need regionally and by county. Visit the About page for more information on this ongoing project.</p>
 
-<h3>Strategic planning overlay map</h3>
 <br>
-<p style="font-size:18px;">The goal of the map below is to help stakeholders target future grantmaking. Darker shades of blue show Census tracts where there is more relative need, here defined by a Social Vulnerability index, than relative grantmaking. Stakeholders may wish to invest more in these places. Shades of white indicate alignment between relative need and grantmaking. Darker shades of red are places where grantmaking is in relative excess. See the County Reports section for more in-depth strategic planning analysis.</p>
+<h2 style="font-size:24px;"><strong>County grantmaking and need statistics</strong></h2>
 <br>
-
-```{r fig.width=800, fig.height=500}
-pal <- colorNumeric("RdBu", NULL)
-
-county_outline <- as(Region_county_outline_sf, "Spatial")
-county_outline <- as(county_outline, "SpatialLines")
-
-leaflet(height = 550, width = 800) %>%
-  addProviderTiles(providers$CartoDB.Positron) %>% 
-  setView(-75.1652, 39.9526, zoom = 9) %>% 
-  addPolygons(data = county_vulnerability_grants,
-              stroke = FALSE, 
-              smoothFactor = 0.3, 
-              fillOpacity = 0.8,
-              fillColor = ~pal(alignment),
-              popup = ~paste0(County,"<br>",
-                    "GEOID: ", GEOID, "<br>",
-                    "Alignment: ", alignment),
-              group = "Vulnerability") %>%
-    addPolylines(data = county_outline, 
-                 stroke = TRUE, 
-                 color = "black",
-                 opacity = 1,
-                 weight = 1,
-                 fillOpacity = 0,
-                 group = "Counties"
-  ) %>% 
-  addLayersControl(
-    overlayGroups = c("Counties", "Vulnerability"),
-    options = layersControlOptions(collapsed = FALSE)
-  ) %>% 
-  addLegend(values = county_vulnerability_grants$alignment, 
-            group = "Vulnerability", 
-            position = "bottomleft", 
-            # pal = pal, 
-            colors =c("#CA0020", "#F4A582", "#F7F7F7", "#92C5DE", "#0571B0"),
-            labels= c("Sufficient Granting", "","Well Aligned","", "Excess Need"),
-            title = "Vulnerability")
-```
-
-
+<p style="font-size:18px;">The below table provides a county-by-county comparison of COVID-19 outcomes, grantmaking and the need for resources.</p>
 <br>
 
 
 ```{r}
-h3("County grantmaking and need statistics")
-
-### Commented out old table
-# formattable::format_table(sparkline.finish, 
-#   align =c("l","c","c","c","c","c","c","c"),
-#   list(
-#     Number=color_bar("#F1A587"),
-#     Dollars=color_bar("#F3C0AC"),
-#     Housing_Instability=color_bar("#8BBCD9"),
-#     Social_Vulnerability=color_bar("#AFD0E3"))) %>%
-#   
-#   kable_styling("striped", full_width = F, bootstrap_options = c("striped", "hover", "condensed")) %>%
-#     add_header_above(c(" " = 1, "Total Granting" = 2, "Average Need" = 2, "Distribution of Need & Resources" = 3),
-#      color="grey") %>%
-#     column_spec(1, bold = T, border_right = T) %>%
-#     column_spec(3, border_right = T) %>%
-#     column_spec(5, border_right = T) %>%
-#     column_spec(8, border_right = T) %>%
-#   htmltools::HTML() %>%
-#   shiny::div() %>%
-#   sparkline::spk_add_deps()
+# h3("County grantmaking and need statistics")
 
 #### ALL THE DATA MUNGING FOR THE NEW TABLE
 ### summarise population by county
@@ -578,6 +499,53 @@ rt1 %>% dui_add_reactable_dep()
 
 ```
 
+<br>
+<h3>Strategic planning overlay map</h3>
+<br>
+<p style="font-size:18px;">The goal of the map below is to help stakeholders target future grantmaking. Darker shades of blue show Census tracts where there is more relative need, here defined by a Social Vulnerability index, than relative grantmaking. Stakeholders may wish to invest more in these places. Shades of white indicate alignment between relative need and grantmaking. Darker shades of red are places where grantmaking is in relative excess. Perform this analysis on your area of interest using the Strategic Planning Tool (need link)</p>
+<br>
+
+```{r fig.width=800, fig.height=500}
+pal <- colorNumeric("RdBu", NULL)
+
+county_outline <- as(Region_county_outline_sf, "Spatial")
+county_outline <- as(county_outline, "SpatialLines")
+
+leaflet(height = 550, width = 800) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  setView(-75.1652, 39.9526, zoom = 9) %>% 
+  addPolygons(data = county_vulnerability_grants,
+              stroke = FALSE, 
+              smoothFactor = 0.3, 
+              fillOpacity = 0.8,
+              fillColor = ~pal(alignment),
+              popup = ~paste0(County,"<br>",
+                    "GEOID: ", GEOID, "<br>",
+                    "Alignment: ", alignment),
+              group = "Vulnerability") %>%
+    addPolylines(data = county_outline, 
+                 stroke = TRUE, 
+                 color = "black",
+                 opacity = 1,
+                 weight = 1,
+                 fillOpacity = 0,
+                 group = "Counties"
+  ) %>% 
+  addLayersControl(
+    overlayGroups = c("Counties", "Vulnerability"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>% 
+  addLegend(values = county_vulnerability_grants$alignment, 
+            group = "Vulnerability", 
+            position = "bottomleft", 
+            # pal = pal, 
+            colors =c("#CA0020", "#F4A582", "#F7F7F7", "#92C5DE", "#0571B0"),
+            labels= c("Sufficient Granting", "","Well Aligned","", "Excess Need"),
+            title = "Vulnerability")
+```
+
+<br>
+
 <footer>
 <p style="font-size:18px;"> This work was supported by a coalition philanthropic organizations in the Delaware Valley Region and created by the below entities. </p>
 <center>
@@ -699,21 +667,50 @@ About
 <div style="max-width:1200px; width: 100%; padding: 0 20px;">
 <h3>About this project</h3>
 <br>
-<p style="font-size:18px;">The purpose of this Phase 1 COVID-19 regional data dashboard is to support a more informed and coordinated, regional response among philanthropic funders by providing information on: What the needs are for philanthropic funding, where that need is, who is receiving aid, how & when major relief funds are responding.</p>
+<p style="font-size:18px;">The goal of the CV19 Regional Strategic Planning dashboard is to help coordinate across-organization, placed-based investment in communities hardest hit by COVID-19. The dashboard includes data on `r nrow(grantmakingData)` grants from ten philanthropic funds operating in the Delaware Valley Region.</p>
 <br>
-<p style="font-size:18px;">The grants data that appears on this page comes from a host of philanthropies who reported the address, domain of interest and other information for their COVID-19 grantmaking activities. We were able to successfully georeference 90% of these grants. The remainder of the data used was collected from a host of Federal sources (see table below).</p?
+<p style="font-size:18px;">TUse the Strategic Planning Tool to see where grantmaking aligns with the need for resources. Use the County Reports to view a wealth of relevant analytics about individual counties in the region.</p>
 <br>
-<p style="font-size:18px;">Phase 2 will increase the number of grants in the analysis. We are also developing a more robust and interactive set of planning and mapping tools for this project. Stay tuned!</p>
+
+<p style="font-size:18px;"><strong>How to use the site?</strong></p>
+
+<ul class="p_list">
+<li><p>How can I compare COVID-19 outcomes, grantmaking, and overall need for resources across counties?’ Use the table on the Project Overview page to compare summary statistics across county.</p></li>
+
+<li><p>‘How can I learn more about granting and need for each individual county in the region?’ Use the County Reports page to view detailed maps and indicators for each county in the region.</p></li>
+
+<li><p>‘How can my organization use these data to plan future investments?’ Use the Strategic Planning Tool (need link) to visualize need and granting by Census tract and use the overlay functionality to see on a relative basis, where need is not being met.</p></li>
+</ul>
+<br>
+
+<p style="font-size:18px;"><strong>The future of this effort</strong></p>
+
+<p>This is one of the first efforts we are aware of to collect and standardize geospatial grantmaking information across multiple philanthropies. The future of this tool can help philanthropies:
+
+<ol class="p_list">
+<li>Promote across-organization strategic planning by analyzing grants made by multiple organizations in a single community.</li>	
+<li>Manage placed-based grants by understanding the social, economic, and health-related context within and without supported communities.</li>
+<li>Promote placed-based evaluation by comparing outcomes for supported communities to outcomes in comparable areas.</li>
+</ol>
+
+<br>
+
+In this project, the emphasis was to quickly build an analytical engine and visualization platform to respond to the crisis. We anticipate future versions to be more visually engaging and perhaps even be compatible with existing Customer Relationship Management (CRM) software used in the Philanthropic sector.</p>
+
+<br>
+
+<p style="font-size:18px;"><strong>Data Sources</strong></p>
+
 <br>
 
 
-Row 
--------------------------------------
+<!-- Row {.no-title} -->
+<!-- ------------------------------------- -->
 
-### tables{.no-title}
+<!-- ### tables{.no-title} -->
 
 ```{r}
-h3("Data Sources")
+# h3("Data Sources")
 
 Theme <- c('Housing','Demographics','Employment','Food Insecurity','Child Welfare','Health')
 Source <- c('American Community Survey (ACS),\n Homeland Infrastructure Foundation-Level Data (HIFLD)', 'ACS,\nHIFLD',
