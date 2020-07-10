@@ -105,6 +105,11 @@ iframe {
   min-width: 320px; /* should be smallest width modern phone */
 }
 
+#shinyapp {
+  padding-top: 0px;
+  min-width: 1600px;
+}
+
 /* footer styling */
 footer {
   margin-top: 1.5em;
@@ -151,19 +156,19 @@ Region_county_outline_sf    <- st_read(file.path(repo_dir,
                                                  "/GEOJSON/Region_county_outline_sf.geojson"))
 
 ## trying to replace this with on-the-fly computation
-county_vulnerability_grants <- st_read(file.path(repo_dir,
-                                                 "/GEOJSON/county_vulnerability_grants.geojson"))
+# county_vulnerability_grants <- st_read(file.path(repo_dir,
+#                                                  "/GEOJSON/county_vulnerability_grants.geojson"))
 
 ### Working on a new version for leaflet map, need to join in alignment data
-county_vulnerability_grants2 <- indices_clean3 %>% 
-  st_drop_geometry() %>% 
-  filter(Index == "vulnerability_index") %>% 
-  pivot_wider(names_from = Index, values_from = Value) %>% 
-  left_join(., filter(indices_clean3, Index == "vulnerability_index") %>% 
-               select(GEOID) , by = "GEOID") %>% 
-  st_as_sf()
-
-county_vulnerability_grants
+# county_vulnerability_grants2 <- indices_clean3 %>% 
+#   st_drop_geometry() %>% 
+#   filter(Index == "vulnerability_index") %>% 
+#   pivot_wider(names_from = Index, values_from = Value) %>% 
+#   left_join(., filter(indices_clean3, Index == "vulnerability_index") %>% 
+#                select(GEOID) , by = "GEOID") %>% 
+#   st_as_sf()
+# 
+# county_vulnerability_grants
 counties <- c("Philadelphia", "Montgomery", "Chester", "Delaware", "Bucks", "Camden", "Burlington", "Atlantic", "Cumberland", "Cape May")
 
 ```
@@ -322,7 +327,8 @@ df <- tibble(
       vulnerability_data,
       function(dat) create_data_hist(dat = dat,alldat = unlist(vulnerability_data))
     )
-  )
+  ) %>% 
+  arrange(desc(dollar_grants))
 
 rt1 <- df %>%
   select(-n, -contains("_data")) %>%
@@ -630,10 +636,24 @@ leaflet(height = 550, width = 800) %>%
 
 </div>
 
+
+Strategic Planning Tool  {data-icon="fa-toolbox"}
+=======================================================================
+
+Row {data-height=1500}
+-------------------------------------
+<div style="width: 100%; padding: 0 0px;">
+
+<iframe id="shinyapp" scrolling = "no" src="https://dcb5006.shinyapps.io/covid_aid/" style="border: none; width: 100%; height: 100%" frameborder="0">
+</iframe>
+
+</div>
+
+
 County Reports {data-icon="fa-map"}
 =======================================================================
 
-<h3>County Level Analysis</h3>
+<h3>Choose a regional or county-level report from the drop down menu to visualize local maps and indicators.</h3>
 
 <div style="max-width:1200px; width: 100%; padding: 0 20px;">
 
@@ -713,14 +733,6 @@ paste0(elementId,"-iframe")
   )
 }
 
-# potentially better to create directly or deconstruct
-# bsselect(county_plots,
-#          frame_height = NULL,
-#          type = "iframe",
-#          selected = "Regional",
-#          elementId = "dropdown",
-#          live_search = TRUE,
-#          show_tick = TRUE)
 
 # use our new function instead; note camelCase not snakecase
 bsselect_buildTags(county_plots,
