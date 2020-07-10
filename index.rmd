@@ -101,7 +101,7 @@ li.selected.active > a {background-color: #2780e3;}
 }
 
 iframe {
-  padding-top: 75px;
+  padding-top: 25px;
   min-width: 320px; /* should be smallest width modern phone */
 }
 
@@ -177,7 +177,7 @@ counties <- c("Philadelphia", "Montgomery", "Chester", "Delaware", "Bucks", "Cam
 Project Overview
 =======================================================================
 
-<div style="max-width:1200px; width: 100%; padding: 0 20px;">
+<div style="max-width:1300px; width: 100%; padding: 0 20px;">
 <h1 style="font-size:36px;"><strong><center>CV-19 Grantmaking strategic planning analytics (Phase 1)</center></strong></h1>
 <h2 style="font-size:24px;"><strong><i>An atlas of COVID-19 era need and philanthropic response in the Delaware Valley Region</i></strong></h2>
 <br>
@@ -644,7 +644,7 @@ Row {data-height=1500}
 -------------------------------------
 <div style="width: 100%; padding: 0 0px;">
 
-<iframe id="shinyapp" scrolling = "no" src="https://urbanspatial.shinyapps.io/CV19_Strategic_Planning_App/" style="border: none; width: 100vw; height: 100%" frameborder="0">
+<iframe id="shinyapp" scrolling = "no" src="https://urbanspatial.shinyapps.io/CV19_Strategic_Planning_App/" style="border: none; width: 100vw; height: 100%; min-height:100vh;" frameborder="0">
 </iframe>
 
 </div>
@@ -655,7 +655,7 @@ County Reports {data-icon="fa-map"}
 
 <h3>Choose a regional or county-level report from the drop down menu to visualize local maps and indicators.</h3>
 
-<div style="max-width:1200px; width: 100%; padding: 0 20px;">
+<div style="max-width:1300px; width: 100%; padding: 0 20px;">
 
 ```{r}
 county_plots <- c("./REPORTS/Regional.html", "./REPORTS/Atlantic_County.html",
@@ -700,7 +700,7 @@ bsselect_buildTags <- function(
     tags$div(
       style = "width: 100%;",
       tags$div(
-        style = paste0("width:", selectWidth,"; float: left; padding-left:20px;"),
+        style = paste0("width:", selectWidth,"; float: left; min-width: 200px;"),
         tags$select(
           id = paste0(elementId,"-select"),
           class = "selectpicker",
@@ -737,8 +737,8 @@ paste0(elementId,"-iframe")
 # use our new function instead; note camelCase not snakecase
 bsselect_buildTags(county_plots,
          selectWidth = "20%",
-         frameHeight = "calc(100vh - 150px)",
-         frameWidth = "75%",
+         frameHeight = "calc(100vh - 180px)",
+         frameWidth = "100%",
          #type = "iframe", #only support iframe
          selected = "Regional",
          elementId = "dropdown",
@@ -751,7 +751,7 @@ bsselect_buildTags(county_plots,
 About 
 =======================================================================
 
-<div style="max-width:1200px; width: 100%; padding: 0 20px;">
+<div style="max-width:1300px; width: 100%; padding: 0 20px;">
 <h3>About this project</h3>
 <br>
 <p style="font-size:18px;">The goal of the CV19 Regional Strategic Planning dashboard is to help coordinate across-organization, placed-based investment in communities hardest hit by COVID-19. The dashboard includes data on `r nrow(grantmakingData)` grants from ten philanthropic funds operating in the Delaware Valley Region.</p>
