@@ -397,13 +397,13 @@ rt1 <- df %>%
             components = list(
               dui_sparklineseries(
                 showArea = TRUE,
-                stroke = "#91a7ff",
-                fill = "#91a7ff"
+                stroke = "#CA0020",
+                fill = "#CA0020"
               ),
               dui_sparkpointseries(
                 points = list("last"),
-                stroke = "rgb(92, 124, 250)",
-                fill = "#fff",
+                stroke = "#CA0020",
+                fill = "#FFF",
                 size = 3,
                 labelPosition = "left",
                 labelOffset = "10",
@@ -414,7 +414,7 @@ rt1 <- df %>%
                   dui_sparkverticalrefline(key="ref-vertical",strokeWidth=1, strokeDasharray="4 4"),
                   dui_sparkpointseries(
                     key="ref-point",
-                    fill="#91a7ff"
+                    fill="#CA0020"
                   )#,
                 )
               )
@@ -464,7 +464,7 @@ grant_hist = {colDef(
       width = 100,
       margin = list(top = 0, right = 6, bottom = 0, left = 6),
       components = list(
-        dui_barseries(binnedData = hist_to_binned_data(value$h_dat), animated = FALSE)
+        dui_barseries(binnedData = hist_to_binned_data(value$h_dat), animated = FALSE,  fill = "#D1E5F0")
       )
     )
   }
@@ -480,7 +480,7 @@ instability_hist = {colDef(
       width = 100,
       margin = list(top = 0, right = 6, bottom = 0, left = 6),
       components = list(
-        dui_barseries(binnedData = hist_to_binned_data(value$h_dat), animated = FALSE, fill = "#20c997")
+        dui_barseries(binnedData = hist_to_binned_data(value$h_dat), animated = FALSE, fill = "#67A9CF")
       )
     )
   }
@@ -496,7 +496,7 @@ vulnerability_hist = {colDef(
       width = 100,
       margin = list(top = 0, right = 6, bottom = 0, left = 6),
       components = list(
-        dui_barseries(binnedData = hist_to_binned_data(value$h_dat), animated = FALSE, fill="#be4bdb")
+        dui_barseries(binnedData = hist_to_binned_data(value$h_dat), animated = FALSE, fill="#2166AC")
       )
     )
   }
