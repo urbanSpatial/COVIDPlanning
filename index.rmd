@@ -510,7 +510,7 @@ rt1 %>% dui_add_reactable_dep()
 <br>
 <h3>Strategic planning overlay map</h3>
 <br>
-<p style="font-size:18px;">The goal of the map below is to help stakeholders target future grantmaking. Darker shades of blue show Census tracts where there is more relative need, here defined by a Social Vulnerability index, than relative grantmaking. Stakeholders may wish to invest more in these places. Shades of white indicate alignment between relative need and grantmaking. Darker shades of red are places where grantmaking is in relative excess. Perform this analysis on your area of interest using the Strategic Planning Tool (need link)</p>
+<p style="font-size:18px;">The goal of the map below is to help stakeholders target future grantmaking. Darker shades of blue show Census tracts where there is more relative need, here defined by a Social Vulnerability index, than relative grantmaking. Stakeholders may wish to invest more in these places. Shades of white indicate alignment between relative need and grantmaking. Darker shades of red are places where grantmaking is in relative excess. Perform this analysis on your area of interest using the <a href="https://urbanspatial.github.io/COVIDPlanning/#strategic-planning-tool">Strategic Planning Tool</a></p>
 <br>
 
 ```{r fig.width=800, fig.height=500}
@@ -644,7 +644,7 @@ Row {data-height=1500}
 -------------------------------------
 <div style="width: 100%; padding: 0 0px;">
 
-<iframe id="shinyapp" scrolling = "no" src="https://dcb5006.shinyapps.io/covid_aid/" style="border: none; width: 100%; height: 100%" frameborder="0">
+<iframe id="shinyapp" scrolling = "no" src="https://urbanspatial.shinyapps.io/CV19_Strategic_Planning_App/" style="border: none; width: 100vw; height: 100%" frameborder="0">
 </iframe>
 
 </div>
