@@ -149,6 +149,8 @@ region.covid <-
   filter(state %in% c("Pennsylvania", "New Jersey"))
 Region_county_outline_sf    <- st_read(file.path(repo_dir,
                                                  "/GEOJSON/Region_county_outline_sf.geojson"))
+
+## trying to replace this with on-the-fly computation
 county_vulnerability_grants <- st_read(file.path(repo_dir,
                                                  "/GEOJSON/county_vulnerability_grants.geojson"))
 
@@ -506,6 +508,79 @@ rt1 %>% dui_add_reactable_dep()
 <br>
 
 ```{r fig.width=800, fig.height=500}
+
+### Make a single copy of tract polygons w/ GEOID
+county_tract_outline_sf <- all_long_sf_clean %>% 
+  select(GEOID, Variable) %>%
+  filter(Variable == "pop") %>% # not guaranteed to always be a variable
+  group_by(GEOID) %>% 
+  summarise()
+
+# Spatial join grants to block group
+grant.sf <- grantmakingData %>% 
+  st_as_sf(coords = c("longitude", "latitude"),  crs=4326) %>% 
+  # st_join(Region_county_outline_sf, join = st_intersects) %>%
+  # filter(!is.na(name)) %>% 
+  st_join(county_tract_outline_sf, join = st_intersects)
+
+# summarise grants by tract/GEOID
+grant.sf.tract <-
+  st_drop_geometry(grant.sf) %>%
+  filter(geocoded==1) %>%  # these are mapped, so they are only 1s
+  left_join(., filter(all_long_sf_clean, Variable == "pop") %>%
+              st_drop_geometry() %>%
+              select(Value, GEOID), by = "GEOID") %>%
+  group_by(GEOID) %>%
+  summarize(Total_Grant_Money = sum(amountAwarded, na.rm=T),
+            Total_Grant_Money_pc =   Total_Grant_Money / unique(Value),
+            Total_Grants = n(),
+            Total_Grants_pc = Total_Grants / unique(Value)) %>%
+  left_join(county_tract_outline_sf, by="GEOID") %>%
+  st_sf()
+
+### Create Vulnerability index from pre-computer index data (see minimal_data_to_align.r)
+### Rank grants
+grant_rank <- indices_clean3 %>%
+  filter(Index =="vulnerability_index") %>% # could be any variable
+  left_join(st_drop_geometry(grant.sf.tract), by = "GEOID") %>% 
+  filter(Total_Grant_Money >0) %>%
+  st_drop_geometry() %>% 
+  mutate(grant_ntile = ntile(Total_Grant_Money,10)) %>% 
+  group_by(Total_Grant_Money) %>% 
+  mutate(grant_ntile = max(grant_ntile)) %>% 
+  select(Total_Grant_Money, grant_ntile) %>% 
+  distinct()
+
+## Initial rank to get max of tied ranks
+vulnerability_rank <- indices_clean3 %>%
+  filter(Index =="vulnerability_index") %>% 
+  st_drop_geometry() %>% 
+  mutate(need_ntile = ntile(Value,10)) %>% 
+  group_by(Value) %>% 
+  mutate(need_ntile = max(need_ntile)) %>% 
+  select(Value, need_ntile) %>% 
+  distinct()
+## actual ranking og vulnerability
+county_vulnerability_grants <- indices_clean3 %>%
+  filter(Index =="vulnerability_index") %>%
+  left_join(st_drop_geometry(grant.sf.tract), by = "GEOID") %>%
+  left_join(grant_rank, by = "Total_Grant_Money") %>%
+  left_join(vulnerability_rank, by  = "Value") %>%
+  mutate(grant_ntile = ifelse(is.na(grant_ntile),0,grant_ntile),
+         need_ntile  = ifelse(is.na(need_ntile),0,need_ntile),
+         alignment = need_ntile - grant_ntile)
+
+### ALIGNMENT of ranks
+county_vulnerability_grants <- indices_clean3 %>%
+  filter(Index =="vulnerability_index") %>%
+  left_join(st_drop_geometry(grant.sf.tract), by = "GEOID") %>%
+  left_join(grant_rank, by = "Total_Grant_Money") %>%
+  left_join(vulnerability_rank, by  = "Value") %>%
+  mutate(grant_ntile = ifelse(is.na(grant_ntile),0,grant_ntile),
+         need_ntile  = ifelse(is.na(need_ntile),0,need_ntile),
+         alignment = need_ntile - grant_ntile)
+
+### Leaflet magic
 pal <- colorNumeric("RdBu", NULL)
 
 county_outline <- as(Region_county_outline_sf, "Spatial")
