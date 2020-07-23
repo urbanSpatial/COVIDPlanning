@@ -381,6 +381,7 @@ rt1 <- df %>%
             data = htmlwidgets::JS("cellInfo.value"),
             height = 40,
             width = 135,
+            max = max(region.covid2$cases_cume),
             margin = list(top = 8, right = 6, bottom = 0, left = 10),
             renderTooltip = htmlwidgets::JS("
               function(_ref) {
@@ -413,7 +414,7 @@ rt1 <- df %>%
                 fill = "#FFF",
                 size = 3,
                 labelPosition = "left",
-                labelOffset = "10",
+                labelOffset = "8",
                 renderLabel = htmlwidgets::JS("function(d) {return d.toLocaleString(undefined, {maximumFractionDigits:0})}")
               ),
               dui_tooltip(
