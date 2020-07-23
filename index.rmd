@@ -669,6 +669,8 @@ County Reports {data-icon="fa-map"}
 county_plots <- c("./REPORTS/Regional.html", "./REPORTS/Atlantic_County.html",
                   "./REPORTS/Bucks_County.html",
                   "./REPORTS/Burlington_County.html", "./REPORTS/Camden_County.html",
+                  "./REPORTS/Cape May_County.html",  "./REPORTS/Chester_County.html",
+                  "./REPORTS/Cumberland_County.html",
                   "./REPORTS/Delaware_County.html", "./REPORTS/Montgomery_County.html", "./REPORTS/Philadelphia_County.html")
 names(county_plots) <- str_replace_all(county_plots,
                                       c("\\.html" = "",
