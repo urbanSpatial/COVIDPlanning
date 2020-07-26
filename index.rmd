@@ -748,7 +748,7 @@ bsselect_buildTags(county_plots,
 
 </div>
 
-About 
+About {data-icon="fa-info"}
 =======================================================================
 
 <div style="max-width:1300px; width: 100%; padding: 0 20px;">
@@ -759,7 +759,7 @@ About
 <p style="font-size:18px;">Use the Strategic Planning Tool to see where grantmaking aligns with the need for resources. Use the County Reports to view a wealth of relevant analytics about individual counties in the region.</p>
 <br>
 
-<p style="font-size:18px;"><strong>How to use the site?</strong></p>
+<p style="font-size:24px;"><strong>How to use the site?</strong></p>
 
 <ul class="p_list">
 <li><p>How can I compare COVID-19 outcomes, grantmaking, and overall need for resources across counties?’ Use the table on the <a href="https://urbanspatial.github.io/COVIDPlanning/#project-overview">Project Overview</a> page to compare summary statistics across county.</p></li>
