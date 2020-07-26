@@ -143,13 +143,18 @@ function renderTooltip(_ref) {
 
 ```{r data, include=FALSE}
 ### NEED ALL THE DATA
+counties <- c("Philadelphia", "Montgomery", "Chester", "Delaware", "Bucks", "Camden", "Burlington", "Atlantic", "Cumberland", "Cape May")
+
 repo_dir <- "C:/MicaDL/CV19_Grants/cv19grantmaking"
 # all_long_sf_clean <- readr::read_rds(file.path(repo_dir,"/DATA/all_long_sf_clean.rds"))
 all_long_sf_clean <- readr::read_rds(file.path(repo_dir,"/DATA/all_long_sf_clean_vars_region.rds")) 
 indices_clean3 <- readr::read_rds(file.path(repo_dir,"/DATA/indices_clean3.rds"))
 # sparkline.finish  <- readr::read_rds(file.path(repo_dir,"/DATA/needs_summary_JS_table.rds"))
-grantmakingData   <- read.csv(file.path(repo_dir,"DATA/7_7_2020_ERFund_geocodes_MDH.csv"),
-                     stringsAsFactors = FALSE) 
+
+# grants data from V1 of index
+grantmakingData_map   <- read.csv(file.path(repo_dir,"DATA/7_7_2020_ERFund_geocodes_MDH.csv"),
+                     stringsAsFactors = FALSE)
+
 # Download CV19 data
 region.covid <- 
   read.csv("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv") %>% 
@@ -157,21 +162,23 @@ region.covid <-
 Region_county_outline_sf    <- st_read(file.path(repo_dir,
                                                  "/GEOJSON/Region_county_outline_sf.geojson"))
 
-## trying to replace this with on-the-fly computation
-# county_vulnerability_grants <- st_read(file.path(repo_dir,
-#                                                  "/GEOJSON/county_vulnerability_grants.geojson"))
-
-### Working on a new version for leaflet map, need to join in alignment data
-# county_vulnerability_grants2 <- indices_clean3 %>% 
-#   st_drop_geometry() %>% 
-#   filter(Index == "vulnerability_index") %>% 
-#   pivot_wider(names_from = Index, values_from = Value) %>% 
-#   left_join(., filter(indices_clean3, Index == "vulnerability_index") %>% 
-#                select(GEOID) , by = "GEOID") %>% 
-#   st_as_sf()
-# 
-# county_vulnerability_grants
-counties <- c("Philadelphia", "Montgomery", "Chester", "Delaware", "Bucks", "Camden", "Burlington", "Atlantic", "Cumberland", "Cape May")
+### Grants data for V2 of index
+grantmakingData <- read.csv(file.path(repo_dir,
+                     'DATA/7_21_2020_newFunds_geocodes_SG.csv'),
+                     stringsAsFactors = FALSE) %>%
+  #filtering out blank addresses and P.O. Boxes (about 5% of the data)
+  filter(!(org_address %in% c("", " "))) %>% 
+  filter(!(str_detect(org_address, "PO")), !(str_detect(org_address, "P.O.")), 
+         !(str_detect(org_address, "Box")), !(str_detect(org_address, "P. O.")),
+         !(str_detect(org_address, "Po Box"))) %>% 
+  rename(domain = CommunityNeedAddressedbyGrant1) %>% 
+  rename(County = CountyofPopulationServed1) %>% # for clarity/consistency
+  rename(amountAwarded = AmountAwarded) %>% # for clarity/consistency
+  mutate(County = str_remove(County, "County"),
+         County = str_remove(County, "Country"), # fix typo
+         County = str_remove(County, "City"),    # for Atlantic City
+         County = str_squish(County)) %>% 
+  filter(County %in% counties)
 
 ```
 
@@ -261,10 +268,6 @@ County_Grant_Sum <- grantmakingData %>%
   group_by(County) %>% 
   summarise(total_grants = n(),
             total_grant_dollars = sum(amountAwarded)) %>% 
-  rbind(., data.frame(County = c("Cape May", "Cumberland"),
-                      total_grants = c(0,0),
-                      total_grant_dollars = c(0,0))) %>% 
-  mutate(County = str_remove(County, " County")) %>% 
   left_join(county_pop, by = "County") %>% 
   mutate(grant_dollars_pc = total_grant_dollars / population,
          grant_dollars_p1000c = total_grant_dollars / (population/1000)) %>% 
@@ -272,10 +275,28 @@ County_Grant_Sum <- grantmakingData %>%
 
 grantmakingData_full <- grantmakingData %>% 
   select(County, amountAwarded) %>% 
-  mutate(County = str_remove(County, " County")) %>% 
-  rbind(., data.frame(County = c("Cape May", "Cumberland"),
-                      amountAwarded = c(0,0))) %>% 
   arrange(County)
+
+# ### Munge grants data
+# County_Grant_Sum <- grantmakingData %>% 
+#   group_by(County) %>% 
+#   summarise(total_grants = n(),
+#             total_grant_dollars = sum(amountAwarded)) %>% 
+#   rbind(., data.frame(County = c("Cape May", "Cumberland"),
+#                       total_grants = c(0,0),
+#                       total_grant_dollars = c(0,0))) %>% 
+#   mutate(County = str_remove(County, " County")) %>% 
+#   left_join(county_pop, by = "County") %>% 
+#   mutate(grant_dollars_pc = total_grant_dollars / population,
+#          grant_dollars_p1000c = total_grant_dollars / (population/1000)) %>% 
+#   arrange(County)
+# 
+# grantmakingData_full <- grantmakingData %>% 
+#   select(County, amountAwarded) %>% 
+#   mutate(County = str_remove(County, " County")) %>% 
+#   rbind(., data.frame(County = c("Cape May", "Cumberland"),
+#                       amountAwarded = c(0,0))) %>% 
+#   arrange(County)
 
 #plot
 # region.covid2 %>%
@@ -440,7 +461,7 @@ dollar_grants = {colDef(
   name = "Total Grant Dollars",
   sortable = TRUE,
   format = colFormat(prefix = "$", separators = TRUE, digits = 0),
-  maxWidth = 100,
+  maxWidth = 110,
 )},
 dollar_grants_per_capita = {colDef(
   name = "Grant Dollars Per Capita",
@@ -457,7 +478,7 @@ avg_housing_instability = {colDef(
 avg_social_vulnerability = {colDef(
   name = "Average Social Vulnerability",
   sortable = TRUE,
-  maxWidth = 100,
+  maxWidth = 110,
   style = "border-right: 2px solid #e6e6e6;",
   align = "center"
 )},
@@ -465,7 +486,7 @@ grant_hist = {colDef(
   name = "Histogram of Grants by Grant Dollars (R)",
   align = "center",
   minWidth = 100,
-  maxWidth = 100,
+  maxWidth = 110,
   cell = function(value, index) {
     dui_histogram(
       height = 40,
@@ -533,7 +554,7 @@ county_tract_outline_sf <- all_long_sf_clean %>%
   summarise()
 
 # Spatial join grants to block group
-grant.sf <- grantmakingData %>% 
+grant.sf <- grantmakingData_map %>% 
   st_as_sf(coords = c("longitude", "latitude"),  crs=4326) %>% 
   # st_join(Region_county_outline_sf, join = st_intersects) %>%
   # filter(!is.na(name)) %>% 
