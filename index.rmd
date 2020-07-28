@@ -403,7 +403,7 @@ rt1 <- df %>%
             height = 40,
             width = 135,
             max = max(region.covid2$cases_cume),
-            margin = list(top = 8, right = 6, bottom = 0, left = 10),
+            margin = list(top = 12, right = 6, bottom = 0, left = 10),
             renderTooltip = htmlwidgets::JS("
               function(_ref) {
                 var datum = _ref.datum;
@@ -434,9 +434,9 @@ rt1 <- df %>%
                 stroke = "#CA0020",
                 fill = "#FFF",
                 size = 3,
-                labelPosition = "left",
-                labelOffset = "8",
-                renderLabel = htmlwidgets::JS("function(d) {return d.toLocaleString(undefined, {maximumFractionDigits:0})}")
+                labelPosition = htmlwidgets::JS("function(d,i) {return {textAnchor: 'end',dx:-6,dy:-6}}"),
+                #labelOffset = 6,
+                renderLabel = htmlwidgets::JS("function(d) { return d.toLocaleString(undefined, {maximumFractionDigits:0}); }")
               ),
               dui_tooltip(
                 components = list(
