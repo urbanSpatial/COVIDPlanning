@@ -199,7 +199,7 @@ Project Overview
 <br>
 <h3>Project Overview</h3>
 <br>
-<p style="font-size:18px;">The maps on this site are part of the <a href="https://www.impact.upenn.edu/toolkits/regional-dashboard/">COVID Response Dashboard</a>, developed by the Center for High Impact Philanthropy, in collaboration with Philanthropy Network Greater Philadelphia. They include grant award data from participating funds serving southeastern Pennsylvania and southern New Jersey. </p>
+<p style="font-size:18px;">The maps on this site are part of the <a href="https://www.impact.upenn.edu/toolkits/regional-dashboard/">COVID Response Dashboard</a>, developed by the Center for High Impact Philanthropy in collaboration with Philanthropy Network Greater Philadelphia. They include grant award data from participating funds serving Southeastern Pennsylvania and Southern New Jersey. </p>
 <br>
 <p style="font-size:18px;">These maps can help you answer:</p>
 <br>
@@ -768,39 +768,41 @@ How to use the site {data-icon="fa-info"}
 =======================================================================
 
 <div style="max-width:1300px; width: 100%; padding: 0 20px;">
-<p style="font-size:24px;"><strong>How to use the site?</strong></p>
+<!-- <p style="font-size:24px;"><strong><center>How to use the site?</center></strong></p> -->
+<h3>How to use the site?</h3>
 <br>
 <p style="font-size:18px;">The purpose of this Atlas is to allow users to visualize geographic trends in the supply of grant funding, the demand or need for that funding, and where the gap between the two remains relatively high.</p>
 <br>
-<p style="font-size:24px;"><strong>Questions the atlas can help you answer
-</strong></p>
+<!-- <p style="font-size:24px;"><strong>Questions the atlas can help you answer -->
+<h3>Questions the atlas can help you answer</h3>
 <br>
-
-<ul class="p_list">
-<li><p>‘How can I learn more about grant awards and need for each individual county in the region?’ Use the <a href="https://urbanspatial.github.io/COVIDPlanning/#county-reports">County Reports</a> page to view detailed maps and indicators for each county in the region.
- </p></li>
-
-<li><p>‘How can my organization use these data to plan future investments?’ Use the <a href="https://urbanspatial.github.io/COVIDPlanning/#strategic-planning-tool">Strategic Planning Tool</a> to visualize need and granting by Census tract or for a custom Area of Interest. Use the overlay functionality to see, on a relative basis, where need is not being met.</p></li>
-
-<li><p>‘How can I compare COVID-19 rates, grant awards, and overall need across different counties?’ Use the table on the <a href="https://urbanspatial.github.io/COVIDPlanning/#project-overview">Project Overview</a> page to compare summary statistics across counties.</p></li>
-
-
-</ul>
-<br>
-
-<p style="font-size:24px;"><strong>The future of this effort</strong></p>
-
-<p>This is one of the first efforts we are aware of to collect and standardize geospatial grant awards information across multiple philanthropic funders. The future of this tool can help funders:
 
 <ol class="p_list">
-<li>Improve targeting of place-based grants by understanding the social, economic, and health-related context.</li>	
-<li>Enable more coordinated planning by analyzing grants made by multiple funders in a single community.</li>
-<li>Promote <a href="http://urbanspatialanalysis.com/evaluating-place-based-investments-in-the-cloud/">place-based evaluation</a> by comparing outcomes for supported communities to outcomes in comparable areas.</li>
+<li><p style="font-size:18px;">‘How can I learn more about grant awards and need for each individual county in the region?’ Use the <a href="https://urbanspatial.github.io/COVIDPlanning/#county-reports">County Reports</a> page to view detailed maps and indicators for each county in the region.
+ </p></li>
+
+<li><p style="font-size:18px;">‘How can my organization use these data to plan future investments?’ Use the <a href="https://urbanspatial.github.io/COVIDPlanning/#strategic-planning-tool">Strategic Planning Tool</a> to visualize need and granting by Census tract or for a custom Area of Interest. Use the overlay functionality to see, on a relative basis, where need is not being met.</p></li>
+
+<li><p style="font-size:18px;">‘How can I compare COVID-19 rates, grant awards, and overall need across different counties?’ Use the table on the <a href="https://urbanspatial.github.io/COVIDPlanning/#project-overview">Project Overview</a> page to compare summary statistics across counties.</p></li>
+
+
+</ol>
+<br>
+
+<h3>The future of this effort</h3>
+<!-- <p style="font-size:24px;"><strong>The future of this effort</strong></p> -->
+
+<p style="font-size:18px;">This is one of the first efforts we are aware of to collect and standardize geospatial grant awards information across multiple philanthropic funders. The future of this tool can help funders:</p>
+
+<ol class="p_list">
+<li><p style="font-size:18px;">Improve targeting of place-based grants by understanding the social, economic, and health-related context.</p></li>	
+<li><p style="font-size:18px;">Enable more coordinated planning by analyzing grants made by multiple funders in a single community.</p></li>
+<li><p style="font-size:18px;">Promote <a href="http://urbanspatialanalysis.com/evaluating-place-based-investments-in-the-cloud/">place-based evaluation</a> by comparing outcomes for supported communities to outcomes in comparable areas.</p></li>
 </ol>
 
 <br>
 
-In this project, the emphasis was to quickly build an analytical engine and visualization platform to respond to the COVID-19 crisis. We anticipate future versions to be more visually engaging and perhaps even be compatible with existing data platforms used in the philanthropic sector.</p>
+<p style="font-size:18px;">In this project, the emphasis was to quickly build an analytical engine and visualization platform to respond to the COVID-19 crisis. We anticipate future versions to be more visually engaging and perhaps even be compatible with existing data platforms used in the philanthropic sector.</p>
 
 <br>
 
