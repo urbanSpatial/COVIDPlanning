@@ -186,20 +186,158 @@ grantmakingData <- read.csv(file.path(repo_dir,
 Project Overview
 =======================================================================
 
-<div style="max-width:1300px; width: 100%; padding: 0 20px;">
-<h1 style="font-size:36px;"><strong><center>CV-19 Grantmaking strategic planning analytics (Phase 1)</center></strong></h1>
-<h2 style="font-size:24px;"><strong><i>An atlas of COVID-19 era need and philanthropic response in the Delaware Valley Region</i></strong></h2>
-<br>
-<h4><strong>July 2020</strong></h4>
-<br>
-<p style="font-size:18px;">Where have Delaware Valley philanthropies allocated emergency COVID-19 resources, and how do those resources align with need? For this project, a series of strategic planning analytics have been designed to help stakeholders target future grantmaking where it is most in need.</p>
+<!-- START OF INTRO -->
 
-<p style="font-size:18px;">Visit County Reports above to investigate the geography of grantmaking and need regionally and by county. Visit the About page for more information on this ongoing project.</p>
+<div style="max-width:1300px; width: 100%; padding: 0 20px;">
+<h1 style="font-size:36px;"><strong><center>COVID-19 Response Funds -  Grantmaking & Need Atlas</center></strong></h1>
+<!-- <h2 style="font-size:24px;"><strong><i>An atlas of COVID-19 era need and philanthropic response in the Delaware Valley Region</i></strong></h2> -->
+<!-- <br> -->
+<!-- <h4><strong>July 2020</strong></h4> -->
+<!-- <br> -->
+<p style="font-size:18px;">Project Overview</p>
+<br>
+<p style="font-size:18px;">The maps on this site are part of the <a href="https://www.impact.upenn.edu/toolkits/regional-dashboard/">COVID Response Dashboard</a>, developed by the Center for High Impact Philanthropy, in collaboration with Philanthropy Network Greater Philadelphia. They include grant award data from participating funds serving southeastern Pennsylvania and southern New Jersey. </p>
+<br>
+<p style="font-size:18px;">These maps can help you answer:</p>
+<br>
+<ol>
+<li>Which geographic areas in the region are especially vulnerable?</li>
+<li>Where have grants already been awarded?</li>
+</ol>
+<br>
+<p style="font-size:18px;">Answers to these questions can be used to inform future grantmaking. For example, in the map below, geographic areas with relatively high vulnerability rates, but relatively low grantmaking activity, may represent opportunities for greater philanthropic impact.</p>
+
+<!-- START OF MAP -->
+
+<br>
+<h3>Grant planning overlay map</h3>
+<br>
+
+```{r fig.width=800, fig.height=500}
+
+### Make a single copy of tract polygons w/ GEOID
+county_tract_outline_sf <- all_long_sf_clean %>% 
+  select(GEOID, Variable) %>%
+  filter(Variable == "pop") %>% # not guaranteed to always be a variable
+  group_by(GEOID) %>% 
+  summarise()
+
+# Spatial join grants to block group
+grant.sf <- grantmakingData_map %>% 
+  st_as_sf(coords = c("longitude", "latitude"),  crs=4326) %>% 
+  # st_join(Region_county_outline_sf, join = st_intersects) %>%
+  # filter(!is.na(name)) %>% 
+  st_join(county_tract_outline_sf, join = st_intersects)
+
+# summarise grants by tract/GEOID
+grant.sf.tract <-
+  st_drop_geometry(grant.sf) %>%
+  filter(geocoded==1) %>%  # these are mapped, so they are only 1s
+  left_join(., filter(all_long_sf_clean, Variable == "pop") %>%
+              st_drop_geometry() %>%
+              select(Value, GEOID), by = "GEOID") %>%
+  group_by(GEOID) %>%
+  summarize(Total_Grant_Money = sum(amountAwarded, na.rm=T),
+            Total_Grant_Money_pc =   Total_Grant_Money / unique(Value),
+            Total_Grants = n(),
+            Total_Grants_pc = Total_Grants / unique(Value)) %>%
+  left_join(county_tract_outline_sf, by="GEOID") %>%
+  st_sf()
+
+### Create Vulnerability index from pre-computer index data (see minimal_data_to_align.r)
+### Rank grants
+grant_rank <- indices_clean3 %>%
+  filter(Index =="vulnerability_index") %>% # could be any variable
+  left_join(st_drop_geometry(grant.sf.tract), by = "GEOID") %>% 
+  filter(Total_Grant_Money >0) %>%
+  st_drop_geometry() %>% 
+  mutate(grant_ntile = ntile(Total_Grant_Money,10)) %>% 
+  group_by(Total_Grant_Money) %>% 
+  mutate(grant_ntile = max(grant_ntile)) %>% 
+  select(Total_Grant_Money, grant_ntile) %>% 
+  distinct()
+
+## Initial rank to get max of tied ranks
+vulnerability_rank <- indices_clean3 %>%
+  filter(Index =="vulnerability_index") %>% 
+  st_drop_geometry() %>% 
+  mutate(need_ntile = ntile(Value,10)) %>% 
+  group_by(Value) %>% 
+  mutate(need_ntile = max(need_ntile)) %>% 
+  select(Value, need_ntile) %>% 
+  distinct()
+## actual ranking og vulnerability
+county_vulnerability_grants <- indices_clean3 %>%
+  filter(Index =="vulnerability_index") %>%
+  left_join(st_drop_geometry(grant.sf.tract), by = "GEOID") %>%
+  left_join(grant_rank, by = "Total_Grant_Money") %>%
+  left_join(vulnerability_rank, by  = "Value") %>%
+  mutate(grant_ntile = ifelse(is.na(grant_ntile),0,grant_ntile),
+         need_ntile  = ifelse(is.na(need_ntile),0,need_ntile),
+         alignment = need_ntile - grant_ntile)
+
+### ALIGNMENT of ranks
+county_vulnerability_grants <- indices_clean3 %>%
+  filter(Index =="vulnerability_index") %>%
+  left_join(st_drop_geometry(grant.sf.tract), by = "GEOID") %>%
+  left_join(grant_rank, by = "Total_Grant_Money") %>%
+  left_join(vulnerability_rank, by  = "Value") %>%
+  mutate(grant_ntile = ifelse(is.na(grant_ntile),0,grant_ntile),
+         need_ntile  = ifelse(is.na(need_ntile),0,need_ntile),
+         alignment = need_ntile - grant_ntile)
+
+### Leaflet magic
+pal <- colorNumeric("RdBu", NULL)
+
+county_outline <- as(Region_county_outline_sf, "Spatial")
+county_outline <- as(county_outline, "SpatialLines")
+
+leaflet(height = 550, width = 800) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  setView(-75.1652, 39.9526, zoom = 9) %>% 
+  addPolygons(data = county_vulnerability_grants,
+              stroke = FALSE, 
+              smoothFactor = 0.3, 
+              fillOpacity = 0.8,
+              fillColor = ~pal(alignment),
+              popup = ~paste0(County,"<br>",
+                    "GEOID: ", GEOID, "<br>",
+                    "Alignment: ", alignment),
+              group = "Vulnerability") %>%
+    addPolylines(data = county_outline, 
+                 stroke = TRUE, 
+                 color = "black",
+                 opacity = 1,
+                 weight = 1,
+                 fillOpacity = 0,
+                 group = "Counties"
+  ) %>% 
+  addLayersControl(
+    overlayGroups = c("Counties", "Vulnerability"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>% 
+  addLegend(values = county_vulnerability_grants$alignment, 
+            group = "Vulnerability", 
+            position = "bottomleft", 
+            # pal = pal, 
+            colors =c("#CA0020", "#F4A582", "#F7F7F7", "#92C5DE", "#0571B0"),
+            labels= c("Sufficient Granting", "","Well Aligned","", "Excess Need"),
+            title = "Vulnerability")
+```
+
+<br>
+<p style="font-size:18px;">Darker shades of blue are areas of concern. They reflect Census tracts where there is more relative need (defined by a Social Vulnerability index) than relative grantmaking. Shades of white indicate relatively better alignment between need and grantmaking. Darker shades of red are places where there is more relative grantmaking compared to apparent need.</p>
+<br>
+<p style="font-size:18px;">The <a href="https://urbanspatial.github.io/COVIDPlanning/#strategic-planning-tool">Strategic Planning Tool</a> is a needs assessment tool that can be used to understand alignment for a custom geographic Area of Interest, as well as other definitions of need such as health, housing, and child welfare, among others</p>
+<br>
+
+
+<!-- START OF DATA TABLE -->
 
 <br>
 <h2 style="font-size:24px;"><strong>County grantmaking and need statistics</strong></h2>
 <br>
-<p style="font-size:18px;">The below table provides a county-by-county comparison of COVID-19 outcomes, grantmaking and the need for resources.</p>
+<p style="font-size:18px;">The below table provides county-by-county comparisons of COVID-19 rates, grant awards, and overall need.</p>
 <br>
 
 
@@ -276,34 +414,6 @@ County_Grant_Sum <- grantmakingData %>%
 grantmakingData_full <- grantmakingData %>% 
   select(County, amountAwarded) %>% 
   arrange(County)
-
-# ### Munge grants data
-# County_Grant_Sum <- grantmakingData %>% 
-#   group_by(County) %>% 
-#   summarise(total_grants = n(),
-#             total_grant_dollars = sum(amountAwarded)) %>% 
-#   rbind(., data.frame(County = c("Cape May", "Cumberland"),
-#                       total_grants = c(0,0),
-#                       total_grant_dollars = c(0,0))) %>% 
-#   mutate(County = str_remove(County, " County")) %>% 
-#   left_join(county_pop, by = "County") %>% 
-#   mutate(grant_dollars_pc = total_grant_dollars / population,
-#          grant_dollars_p1000c = total_grant_dollars / (population/1000)) %>% 
-#   arrange(County)
-# 
-# grantmakingData_full <- grantmakingData %>% 
-#   select(County, amountAwarded) %>% 
-#   mutate(County = str_remove(County, " County")) %>% 
-#   rbind(., data.frame(County = c("Cape May", "Cumberland"),
-#                       amountAwarded = c(0,0))) %>% 
-#   arrange(County)
-
-#plot
-# region.covid2 %>%
-#   ggplot(aes(as.Date(date), cases_cume)) +
-#   geom_bar(stat="identity" , fill="black") +
-#   theme(legend.position = "none") +
-#   facet_wrap(~county)
 
 ncounty <- length(counties)
 
@@ -539,124 +649,6 @@ rt1 %>% dui_add_reactable_dep()
 ```
 
 <br>
-<h3>Strategic planning overlay map</h3>
-<br>
-<p style="font-size:18px;">The goal of the map below is to help stakeholders target future grantmaking. Darker shades of blue show Census tracts where there is more relative need, here defined by a Social Vulnerability index, than relative grantmaking. Stakeholders may wish to invest more in these places. Shades of white indicate alignment between relative need and grantmaking. Darker shades of red are places where grantmaking is in relative excess. Perform this analysis on your area of interest using the <a href="https://urbanspatial.github.io/COVIDPlanning/#strategic-planning-tool">Strategic Planning Tool</a></p>
-<br>
-
-```{r fig.width=800, fig.height=500}
-
-### Make a single copy of tract polygons w/ GEOID
-county_tract_outline_sf <- all_long_sf_clean %>% 
-  select(GEOID, Variable) %>%
-  filter(Variable == "pop") %>% # not guaranteed to always be a variable
-  group_by(GEOID) %>% 
-  summarise()
-
-# Spatial join grants to block group
-grant.sf <- grantmakingData_map %>% 
-  st_as_sf(coords = c("longitude", "latitude"),  crs=4326) %>% 
-  # st_join(Region_county_outline_sf, join = st_intersects) %>%
-  # filter(!is.na(name)) %>% 
-  st_join(county_tract_outline_sf, join = st_intersects)
-
-# summarise grants by tract/GEOID
-grant.sf.tract <-
-  st_drop_geometry(grant.sf) %>%
-  filter(geocoded==1) %>%  # these are mapped, so they are only 1s
-  left_join(., filter(all_long_sf_clean, Variable == "pop") %>%
-              st_drop_geometry() %>%
-              select(Value, GEOID), by = "GEOID") %>%
-  group_by(GEOID) %>%
-  summarize(Total_Grant_Money = sum(amountAwarded, na.rm=T),
-            Total_Grant_Money_pc =   Total_Grant_Money / unique(Value),
-            Total_Grants = n(),
-            Total_Grants_pc = Total_Grants / unique(Value)) %>%
-  left_join(county_tract_outline_sf, by="GEOID") %>%
-  st_sf()
-
-### Create Vulnerability index from pre-computer index data (see minimal_data_to_align.r)
-### Rank grants
-grant_rank <- indices_clean3 %>%
-  filter(Index =="vulnerability_index") %>% # could be any variable
-  left_join(st_drop_geometry(grant.sf.tract), by = "GEOID") %>% 
-  filter(Total_Grant_Money >0) %>%
-  st_drop_geometry() %>% 
-  mutate(grant_ntile = ntile(Total_Grant_Money,10)) %>% 
-  group_by(Total_Grant_Money) %>% 
-  mutate(grant_ntile = max(grant_ntile)) %>% 
-  select(Total_Grant_Money, grant_ntile) %>% 
-  distinct()
-
-## Initial rank to get max of tied ranks
-vulnerability_rank <- indices_clean3 %>%
-  filter(Index =="vulnerability_index") %>% 
-  st_drop_geometry() %>% 
-  mutate(need_ntile = ntile(Value,10)) %>% 
-  group_by(Value) %>% 
-  mutate(need_ntile = max(need_ntile)) %>% 
-  select(Value, need_ntile) %>% 
-  distinct()
-## actual ranking og vulnerability
-county_vulnerability_grants <- indices_clean3 %>%
-  filter(Index =="vulnerability_index") %>%
-  left_join(st_drop_geometry(grant.sf.tract), by = "GEOID") %>%
-  left_join(grant_rank, by = "Total_Grant_Money") %>%
-  left_join(vulnerability_rank, by  = "Value") %>%
-  mutate(grant_ntile = ifelse(is.na(grant_ntile),0,grant_ntile),
-         need_ntile  = ifelse(is.na(need_ntile),0,need_ntile),
-         alignment = need_ntile - grant_ntile)
-
-### ALIGNMENT of ranks
-county_vulnerability_grants <- indices_clean3 %>%
-  filter(Index =="vulnerability_index") %>%
-  left_join(st_drop_geometry(grant.sf.tract), by = "GEOID") %>%
-  left_join(grant_rank, by = "Total_Grant_Money") %>%
-  left_join(vulnerability_rank, by  = "Value") %>%
-  mutate(grant_ntile = ifelse(is.na(grant_ntile),0,grant_ntile),
-         need_ntile  = ifelse(is.na(need_ntile),0,need_ntile),
-         alignment = need_ntile - grant_ntile)
-
-### Leaflet magic
-pal <- colorNumeric("RdBu", NULL)
-
-county_outline <- as(Region_county_outline_sf, "Spatial")
-county_outline <- as(county_outline, "SpatialLines")
-
-leaflet(height = 550, width = 800) %>%
-  addProviderTiles(providers$CartoDB.Positron) %>% 
-  setView(-75.1652, 39.9526, zoom = 9) %>% 
-  addPolygons(data = county_vulnerability_grants,
-              stroke = FALSE, 
-              smoothFactor = 0.3, 
-              fillOpacity = 0.8,
-              fillColor = ~pal(alignment),
-              popup = ~paste0(County,"<br>",
-                    "GEOID: ", GEOID, "<br>",
-                    "Alignment: ", alignment),
-              group = "Vulnerability") %>%
-    addPolylines(data = county_outline, 
-                 stroke = TRUE, 
-                 color = "black",
-                 opacity = 1,
-                 weight = 1,
-                 fillOpacity = 0,
-                 group = "Counties"
-  ) %>% 
-  addLayersControl(
-    overlayGroups = c("Counties", "Vulnerability"),
-    options = layersControlOptions(collapsed = FALSE)
-  ) %>% 
-  addLegend(values = county_vulnerability_grants$alignment, 
-            group = "Vulnerability", 
-            position = "bottomleft", 
-            # pal = pal, 
-            colors =c("#CA0020", "#F4A582", "#F7F7F7", "#92C5DE", "#0571B0"),
-            labels= c("Sufficient Granting", "","Well Aligned","", "Excess Need"),
-            title = "Vulnerability")
-```
-
-<br>
 
 <footer>
 <p style="font-size:18px;"> This work was supported by a coalition philanthropic organizations in the Delaware Valley Region and created by the below entities. </p>
@@ -769,7 +761,7 @@ bsselect_buildTags(county_plots,
 
 </div>
 
-About {data-icon="fa-info"}
+How to use the site {data-icon="fa-info"}
 =======================================================================
 
 <div style="max-width:1300px; width: 100%; padding: 0 20px;">
