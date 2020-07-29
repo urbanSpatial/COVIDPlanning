@@ -152,7 +152,7 @@ indices_clean3 <- readr::read_rds(file.path(repo_dir,"/DATA/indices_clean3.rds")
 # sparkline.finish  <- readr::read_rds(file.path(repo_dir,"/DATA/needs_summary_JS_table.rds"))
 
 # grants data from V1 of index
-grantmakingData_map   <- read.csv(file.path(repo_dir,"DATA/7_7_2020_ERFund_geocodes_MDH.csv"),
+grantmakingData_map   <- read.csv(file.path(repo_dir,"DATA/7_24_2020_ERFund_geocodes_MDH.csv"),
                      stringsAsFactors = FALSE)
 
 # Download CV19 data
@@ -193,16 +193,17 @@ Project Overview
 <!-- <h2 style="font-size:24px;"><strong><i>An atlas of COVID-19 era need and philanthropic response in the Delaware Valley Region</i></strong></h2> -->
 <!-- <br> -->
 <!-- <h4><strong>July 2020</strong></h4> -->
-<!-- <br> -->
-<p style="font-size:18px;">Project Overview</p>
+<br>
+<br>
+<h3>Project Overview</h3>
 <br>
 <p style="font-size:18px;">The maps on this site are part of the <a href="https://www.impact.upenn.edu/toolkits/regional-dashboard/">COVID Response Dashboard</a>, developed by the Center for High Impact Philanthropy, in collaboration with Philanthropy Network Greater Philadelphia. They include grant award data from participating funds serving southeastern Pennsylvania and southern New Jersey. </p>
 <br>
 <p style="font-size:18px;">These maps can help you answer:</p>
 <br>
 <ol>
-<li>Which geographic areas in the region are especially vulnerable?</li>
-<li>Where have grants already been awarded?</li>
+<li style="font-size:18px;">Which geographic areas in the region are especially vulnerable?</li>
+<li style="font-size:18px;">Where have grants already been awarded?</li>
 </ol>
 <br>
 <p style="font-size:18px;">Answers to these questions can be used to inform future grantmaking. For example, in the map below, geographic areas with relatively high vulnerability rates, but relatively low grantmaking activity, may represent opportunities for greater philanthropic impact.</p>
@@ -651,7 +652,7 @@ rt1 %>% dui_add_reactable_dep()
 <br>
 
 <footer>
-<p style="font-size:18px;"> This work was supported by a coalition philanthropic organizations in the Delaware Valley Region and created by the below entities. </p>
+<p style="font-size:18px;">This atlas was developed as part of the COVID Response Dashboard, supported by <a href="https://philanthropynetwork.org/">Philanthropy Network Greater Philadelphia</a> and the <a href="https://williampennfoundation.org/">William Penn Foundation</a> and created by the below entities.</p>
 <center>
   <img style="margin-top: 1.5em;max-width:96vw;" src="./IMAGES/3logos_ERproject.png" width="600">
 </center>
@@ -837,7 +838,7 @@ kable(sources) %>%
 ```
 
 <footer>
-<p style="font-size:18px;"> This work was supported by a coalition philanthropic organizations in the Delaware Valley Region and created by the below entities. </p>
+<p style="font-size:18px;">This atlas was developed as part of the COVID Response Dashboard, supported by <a href="https://philanthropynetwork.org/">Philanthropy Network Greater Philadelphia</a> and the <a href="https://williampennfoundation.org/">William Penn Foundation</a> and created by the below entities.</p>
 <center>
   <img style="margin-top: 1.5em;max-width:96vw;" src="./IMAGES/3logos_ERproject.png" width="600">
 </center>
