@@ -6,6 +6,8 @@ output:
     vertical_layout: scroll
     theme: default
     mathjax: null
+    navbar:
+      - { title: "COVID Response Dashboard", href: "https://www.impact.upenn.edu/toolkits/covid-response-dashboard/" }
 ---
 
 
