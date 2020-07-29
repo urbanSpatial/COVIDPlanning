@@ -768,38 +768,39 @@ How to use the site {data-icon="fa-info"}
 =======================================================================
 
 <div style="max-width:1300px; width: 100%; padding: 0 20px;">
-<h3>About this project</h3>
-<br>
-<p style="font-size:18px;">The goal of the CV19 Regional Strategic Planning dashboard is to help coordinate across-organization, placed-based investment in communities hardest hit by COVID-19. The dashboard includes data on `r nrow(grantmakingData)` grants from ten philanthropic funds operating in the Delaware Valley Region.</p>
-<br>
-<p style="font-size:18px;">Use the Strategic Planning Tool to see where grantmaking aligns with the need for resources. Use the County Reports to view a wealth of relevant analytics about individual counties in the region.</p>
-<br>
-
 <p style="font-size:24px;"><strong>How to use the site?</strong></p>
+<br>
+<p style="font-size:18px;">The purpose of this Atlas is to allow users to visualize geographic trends in the supply of grant funding, the demand or need for that funding, and where the gap between the two remains relatively high.</p>
+<br>
+<p style="font-size:24px;"><strong>Questions the atlas can help you answer
+</strong></p>
+<br>
 
 <ul class="p_list">
-<li><p>How can I compare COVID-19 outcomes, grantmaking, and overall need for resources across counties?’ Use the table on the <a href="https://urbanspatial.github.io/COVIDPlanning/#project-overview">Project Overview</a> page to compare summary statistics across county.</p></li>
+<li><p>‘How can I learn more about grant awards and need for each individual county in the region?’ Use the <a href="https://urbanspatial.github.io/COVIDPlanning/#county-reports">County Reports</a> page to view detailed maps and indicators for each county in the region.
+ </p></li>
+
+<li><p>‘How can my organization use these data to plan future investments?’ Use the <a href="https://urbanspatial.github.io/COVIDPlanning/#strategic-planning-tool">Strategic Planning Tool</a> to visualize need and granting by Census tract or for a custom Area of Interest. Use the overlay functionality to see, on a relative basis, where need is not being met.</p></li>
+
+<li><p>‘How can I compare COVID-19 rates, grant awards, and overall need across different counties?’ Use the table on the <a href="https://urbanspatial.github.io/COVIDPlanning/#project-overview">Project Overview</a> page to compare summary statistics across counties.</p></li>
 
 
-<li><p>‘How can I learn more about granting and need for each individual county in the region?’ Use the <a href="https://urbanspatial.github.io/COVIDPlanning/#county-reports">County Reports</a> page to view detailed maps and indicators for each county in the region.</p></li>
-
-<li><p>‘How can my organization use these data to plan future investments?’ Use the <a href="https://urbanspatial.github.io/COVIDPlanning/#strategic-planning-tool">Strategic Planning Tool</a> to visualize need and granting by Census tract and use the overlay functionality to see on a relative basis, where need is not being met.</p></li>
 </ul>
 <br>
 
-<p style="font-size:18px;"><strong>The future of this effort</strong></p>
+<p style="font-size:24px;"><strong>The future of this effort</strong></p>
 
-<p>This is one of the first efforts we are aware of to collect and standardize geospatial grantmaking information across multiple philanthropies. The future of this tool can help philanthropies:
+<p>This is one of the first efforts we are aware of to collect and standardize geospatial grant awards information across multiple philanthropic funders. The future of this tool can help funders:
 
 <ol class="p_list">
-<li>Promote across-organization strategic planning by analyzing grants made by multiple organizations in a single community.</li>	
-<li>Manage placed-based grants by understanding the social, economic, and health-related context within and without supported communities.</li>
-<li>Promote placed-based evaluation by comparing outcomes for supported communities to outcomes in comparable areas.</li>
+<li>Improve targeting of place-based grants by understanding the social, economic, and health-related context.</li>	
+<li>Enable more coordinated planning by analyzing grants made by multiple funders in a single community.</li>
+<li>Promote <a href="http://urbanspatialanalysis.com/evaluating-place-based-investments-in-the-cloud/">place-based evaluation</a> by comparing outcomes for supported communities to outcomes in comparable areas.</li>
 </ol>
 
 <br>
 
-In this project, the emphasis was to quickly build an analytical engine and visualization platform to respond to the crisis. We anticipate future versions to be more visually engaging and perhaps even be compatible with existing Customer Relationship Management (CRM) software used in the Philanthropic sector.</p>
+In this project, the emphasis was to quickly build an analytical engine and visualization platform to respond to the COVID-19 crisis. We anticipate future versions to be more visually engaging and perhaps even be compatible with existing data platforms used in the philanthropic sector.</p>
 
 <br>
 
